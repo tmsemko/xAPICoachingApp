@@ -412,23 +412,41 @@ async function initModeAndRubrics() {
   } catch {}
   try {
     state.rubrics = await (await fetch("/api/rubrics")).json();
-    const sel = $("rubric-select");
-    sel.innerHTML = Object.entries(state.rubrics)
-      .map(([key, r]) => `<option value="${key}">${r.name}</option>`)
-      .join("");
-    sel.addEventListener("change", renderRubricPreview);
+    state.rubricKey = Object.keys(state.rubrics)[0];
+    renderFrameworkCards();
     renderRubricPreview();
   } catch {}
 }
 
 function currentRubric() {
-  return state.rubrics[$("rubric-select").value];
+  return state.rubrics[state.rubricKey];
+}
+
+function renderFrameworkCards() {
+  $("framework-cards").innerHTML = Object.entries(state.rubrics)
+    .map(
+      ([key, r]) => `<button type="button" class="fw-card${key === state.rubricKey ? " selected" : ""}" data-key="${key}">
+        <span class="fw-name">${esc(r.framework || r.name)}</span>
+        <span class="fw-job">${esc(r.jobFunction || "")}</span>
+        <span class="fw-blurb">${esc(r.blurb || "")}</span>
+      </button>`
+    )
+    .join("");
+  $("framework-cards").querySelectorAll(".fw-card").forEach((card) =>
+    card.addEventListener("click", () => {
+      state.rubricKey = card.dataset.key;
+      renderFrameworkCards();
+      renderRubricPreview();
+    })
+  );
 }
 
 function renderRubricPreview() {
   const r = currentRubric();
   if (!r) return;
   $("rubric-preview").innerHTML =
+    `<p><strong>${esc(r.name)}</strong></p>` +
+    (r.bestFor ? `<p class="hint">Best for: ${esc(r.bestFor)}</p>` : "") +
     `<p class="hint">Levels: ${r.levels.join(" < ")}</p>` +
     r.dimensions.map((d) => `<div class="dim"><strong>${esc(d.name)}</strong> — ${esc(d.definition)}</div>`).join("");
 }

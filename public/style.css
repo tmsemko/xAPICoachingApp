@@ -171,6 +171,32 @@ button.link { background: none; border: none; color: var(--accent); cursor: poin
 .mode-banner.local { background: #fde7d6; color: #9a5a1a; border: 1px solid #e8c9a0; }
 .mode-banner.api { background: #ddeee3; color: var(--good); border: 1px solid #bcd9c6; }
 
+.fw-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.6rem;
+  margin: 0.5rem 0 0.9rem;
+}
+.fw-card {
+  text-align: left;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 0.7rem 0.85rem;
+  cursor: pointer;
+  font: inherit;
+  color: var(--ink);
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  transition: border-color 0.15s, background 0.15s;
+}
+.fw-card:hover { border-color: var(--accent); }
+.fw-card.selected { border-color: var(--accent); background: var(--accent-soft); box-shadow: 0 0 0 1px var(--accent); }
+.fw-card .fw-name { font-weight: 700; font-size: 0.95rem; }
+.fw-card .fw-job { color: var(--accent); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.03em; }
+.fw-card .fw-blurb { color: var(--muted); font-size: 0.78rem; line-height: 1.35; }
+
 .rubric-preview { margin: 0.5rem 0; font-size: 0.85rem; }
 .rubric-preview .dim { padding: 0.35rem 0; border-bottom: 1px dashed var(--line); }
 .rubric-preview .dim:last-child { border: none; }

@@ -38,11 +38,24 @@ reads the statements back for behavior analysis. Classification runs on
 
 - **Single metric** — one scale (categorical labels or numeric), as above.
 - **Multi-dimensional rubric** — several sub-dimensions, each scored
-  independently on a shared level scale, with per-dimension evidence. The
-  built-in **Performance-Focused Coaching Rubric** (5 dimensions) ships in
-  [`lib/rubrics.js`](lib/rubrics.js). Rubric runs produce one overall xAPI
-  statement plus one per dimension, so the dashboard can filter/sort by
-  individual competency.
+  independently on a shared level scale, with per-dimension evidence. Six
+  built-in rubrics ship in [`lib/rubrics.js`](lib/rubrics.js) and are chosen
+  via the **coaching framework picker** in the Metric step:
+
+  | Framework | Job function | Levels |
+  |-----------|--------------|--------|
+  | **GROW** | Management / people leadership | Developing → Exemplary (4) |
+  | **CLEAR** | Executive & senior leadership coaching | Developing → Exemplary (4) |
+  | **OSKAR** | Team performance / solution-focused management | Developing → Exemplary (4) |
+  | **FUEL** | Sales coaching & manager-initiated feedback | Developing → Exemplary (4) |
+  | **Co-Active** | Executive presence, public speaking & career | Developing → Exemplary (4) |
+  | **Performance** | Data & analytics coaching (domain-specific) | Needs Improvement → Advanced (3) |
+
+  Each framework rubric is the machine-usable version of the corresponding
+  document in [`docs/frameworks/`](docs/frameworks/) (see
+  [`comparison.md`](docs/frameworks/comparison.md) for how to choose). Rubric
+  runs produce one overall xAPI statement plus one per dimension, so the
+  dashboard can filter/sort by individual competency.
 
 ## LLM providers — Claude or Gemini
 
