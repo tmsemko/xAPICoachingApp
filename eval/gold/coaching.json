@@ -1,0 +1,19 @@
+{
+  "transcript": "test/fixtures/coaching-transcript.txt",
+  "rubric": "coaching",
+  "source": "Human/Claude manual analysis (data/manual-classification.json)",
+  "gold": {
+    "overall_classification": "Needs Improvement",
+    "dimensions": {
+      "Powerful Questioning": "Needs Improvement",
+      "Coachee-Led Problem Solving": "Needs Improvement",
+      "Contextual Tool & Domain Relevance": "Advanced",
+      "Psychological Safety & Active Listening": "Needs Improvement",
+      "Action-Orientation & Collaborative Accountability": "Needs Improvement"
+    },
+    "signals": {
+      "coach_talk_time_pct": { "expected": 71, "tolerance": 8 }
+    },
+    "notes": "The load-bearing judgment is dimension 3 (Advanced) diverging from an otherwise Needs-Improvement session. A model that flattens all five to one level fails the core test."
+  }
+}

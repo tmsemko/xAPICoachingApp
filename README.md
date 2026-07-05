@@ -1,0 +1,131 @@
+# Meeting Metric → xAPI
+
+Classify meeting transcripts against a **metric you define at run time**, extract
+sentiment and behavioral evidence, map the result to xAPI, and route the
+statements to any Learning Record Store (LRS). A results dashboard reads the
+statements back for behavior analysis.
+
+## What it does
+
+1. **Transcript in** — paste or upload a `.txt`/`.vtt`/`.srt` transcript (caption
+   timing is stripped automatically).
+2. **Ask for the metric** — the classification is driven by a metric you supply
+   at the start of each run (name + rubric + categorical labels or a numeric
+   scale). Presets are included (Psychological Safety, Decision Quality,
+   Engagement Balance, Coaching Presence, Sentiment).
+3. **Classify** — Claude (`claude-opus-4-8` by default, adaptive thinking,
+   schema-constrained JSON output) returns the classification, a 0–1 score,
+   sentiment, per-participant breakdown, key evidence quotes, topics/tags, and
+   recommendations.
+4. **Map to xAPI** — the app suggests a verb, activity type, profiles, and
+   extensions based on your meeting type and scale, and explains each choice.
+   You can override anything. All IRIs are verified against the
+   [ADL xAPI Authored Profiles](https://github.com/adlnet/xapi-authored-profiles)
+   (ADL Vocabulary, AcrossX, TinCan Registry).
+5. **Send to LRS** — statements are POSTed to your LRS with
+   `X-Experience-API-Version: 1.0.3` and Basic auth, and logged locally.
+6. **Dashboard** (`/dashboard.html`) — surfaces behaviors (verb distribution,
+   per-actor behavior, topics) and a results table you can **filter by activity,
+   actor, and verb** and **sort by result score, sentiment, time, or actor**.
+
+## Metric modes
+
+- **Single metric** — one scale (categorical labels or numeric), as above.
+- **Multi-dimensional rubric** — several sub-dimensions, each scored
+  independently on a shared level scale, with per-dimension evidence. The
+  built-in **Performance-Focused Coaching Rubric** (5 dimensions) ships in
+  [`lib/rubrics.js`](lib/rubrics.js). Rubric runs produce one overall xAPI
+  statement plus one per dimension, so the dashboard can filter/sort by
+  individual competency.
+
+## Running locally for testing (no API key)
+
+The classifier has two backends, selected by `LLM_MODE`:
+
+| Mode | What runs | When |
+|------|-----------|------|
+| `api` (default when a key is present) | The Claude model (`CLASSIFIER_MODEL`, default `claude-sonnet-5`) | Production / real classification |
+| `local` (default when no key) | Offline deterministic heuristic in [`lib/localClassifier.js`](lib/localClassifier.js) | Pipeline testing, CI, demos |
+
+Local mode produces schema-valid output so the entire flow (classify → map →
+send → dashboard) works with no credentials. The UI shows a **LOCAL TEST MODE**
+banner when it's active. It's a heuristic, not the model — good for the obvious
+cases, not a substitute for judgment.
+
+```bash
+npm install
+
+# offline — no key needed
+npm run classify:local           # classify the coaching fixture, print JSON
+npm run eval:local               # score the offline classifier vs gold labels
+npm start                        # UI in local mode at http://localhost:3400
+
+# real model
+export ANTHROPIC_API_KEY=sk-ant-...
+LLM_MODE=api CLASSIFIER_MODEL=claude-sonnet-5 npm start
+```
+
+Deterministic quantitative signals (talk-time %, interruption count, speaker
+share) are computed in code ([`lib/transcript.js`](lib/transcript.js)) and handed
+to the model as facts — this improves accuracy and lets a cheaper model succeed.
+
+## Choosing the model
+
+See [`docs/classifier-skill.md`](docs/classifier-skill.md) (the LLM's task
+contract, decomposed into sub-skills) and
+[`docs/model-selection.md`](docs/model-selection.md) (recommendation + the
+levers that cut API cost: code-computed signals, structured outputs, rubric
+prompt caching, single-call scoring, confidence-gated escalation, Batch API).
+
+To pick empirically, run the eval across candidates (needs a key) — each run
+appends a scorecard to `eval/results.jsonl`:
+
+```bash
+LLM_MODE=api CLASSIFIER_MODEL=claude-haiku-4-5 npm run eval
+LLM_MODE=api CLASSIFIER_MODEL=claude-sonnet-5   npm run eval
+LLM_MODE=api CLASSIFIER_MODEL=claude-opus-4-8   npm run eval
+```
+
+Override the model with `CLASSIFIER_MODEL` and the port with `PORT`.
+
+## xAPI vocabulary used
+
+| Kind | Default suggestion | Source profile |
+|------|--------------------|----------------|
+| Verb (evaluation) | `.../acrossx/verbs/evaluated` | AcrossX |
+| Verb (numeric scale) | `.../tincanapi.com/verb/rated` | TinCan Registry |
+| Verb (per participant) | `.../adl/.../commented` | ADL Vocabulary |
+| Activity type (meeting) | `.../adl/.../activities/meeting` | ADL Vocabulary |
+| Extensions | classification, topic, tags, powered-by, quality-rating, + custom (metric name/definition, sentiment, confidence, model) | TinCan / custom |
+
+The full catalog (13 verbs, 9 activity types, 11 registry extensions, 3 profiles)
+is browsable and swappable in the mapping step. AI-derived metadata that has no
+registry equivalent uses a configurable custom base IRI
+(`http://example.org/xapi` by default).
+
+## How the dashboard gets data
+
+- **Local send log** (default) — `data/sent-statements.json`, appended every time
+  statements are accepted by an LRS.
+- **Query LRS** — issues an xAPI `GET /statements` against a queryable LRS
+  (filters: activity, verb, since/until). The mock LRS in `scratchpad` only
+  accepts POSTs, so use the local log with it.
+
+## Project layout
+
+```
+server.js                Express API + static hosting + send log + mode switch
+lib/classify.js          Claude call; single + rubric JSON schemas; prompt builder
+lib/localClassifier.js   Offline deterministic classifier (LLM_MODE=local)
+lib/transcript.js        Deterministic speaker/talk-time/interruption parsing
+lib/rubrics.js           Built-in multi-dimensional rubrics (coaching)
+lib/catalog.js           Verified xAPI vocabulary + rule-based suggestions
+lib/xapi.js              Statement builder (single + rubric) + LRS POST
+public/                  index.html (5-step wizard) + dashboard.html + JS/CSS
+test/run-classify.mjs    CLI classifier runner (local or api)
+test/fixtures/           Transcript fixtures
+eval/run-eval.mjs        Model scorecard vs gold labels
+eval/gold/               Gold-labeled fixtures for evaluation
+docs/classifier-skill.md The LLM skill contract (sub-skill decomposition)
+docs/model-selection.md  Model recommendation + cost-optimization levers
+```

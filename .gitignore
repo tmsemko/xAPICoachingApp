@@ -1,0 +1,5 @@
+node_modules/
+.env
+.netlify/
+.claude/settings.local.json
+data/sent-statements.json

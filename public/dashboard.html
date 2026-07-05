@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard — Meeting Metric → xAPI</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Results Dashboard</h1>
+    <p class="tagline">Behaviors and metric results across your classified meetings. <a href="/">← Back to classifier</a></p>
+  </header>
+
+  <main>
+    <!-- Data source -->
+    <section class="panel">
+      <h2>Data source</h2>
+      <div class="row">
+        <label class="check-inline"><input type="radio" name="source" value="local" checked /> Local send log</label>
+        <label class="check-inline"><input type="radio" name="source" value="lrs" /> Query LRS</label>
+        <button class="primary" id="load-data" style="margin-left:auto">Load statements</button>
+      </div>
+      <div id="lrs-config" class="grid-3 hidden">
+        <label>Endpoint URL <input type="url" id="q-endpoint" placeholder="http://localhost:3999/xapi" /></label>
+        <label>Username / key <input type="text" id="q-username" /></label>
+        <label>Password / secret <input type="password" id="q-password" /></label>
+      </div>
+      <div id="load-status" class="status hidden"></div>
+    </section>
+
+    <!-- Summary -->
+    <section class="panel" id="summary-panel" style="margin-top:1rem">
+      <h2>Overview</h2>
+      <div class="cards" id="summary-cards"></div>
+    </section>
+
+    <!-- Behaviors -->
+    <section class="panel" style="margin-top:1rem">
+      <h2>Behaviors</h2>
+      <p class="hint">What kinds of activity show up in the statement stream, and how each actor behaves across meetings.</p>
+      <div class="grid-2">
+        <div>
+          <h3>By verb</h3>
+          <div id="verb-bars"></div>
+        </div>
+        <div>
+          <h3>Top topics &amp; tags</h3>
+          <div id="topic-chips" class="chips readonly"></div>
+        </div>
+      </div>
+      <h3>By actor</h3>
+      <div class="table-wrap">
+        <table id="actor-table">
+          <thead>
+            <tr><th>Actor</th><th>Statements</th><th>Avg score</th><th>Avg sentiment</th><th>Behaviors (verbs)</th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Results -->
+    <section class="panel" style="margin-top:1rem">
+      <h2>Results</h2>
+      <div class="filter-bar">
+        <label>Activity
+          <select id="f-activity"><option value="">All activities</option></select>
+        </label>
+        <label>Actor
+          <select id="f-actor"><option value="">All actors</option></select>
+        </label>
+        <label>Verb
+          <select id="f-verb"><option value="">All verbs</option></select>
+        </label>
+        <label>Sort by
+          <select id="f-sort">
+            <option value="score-desc">Result score (high → low)</option>
+            <option value="score-asc">Result score (low → high)</option>
+            <option value="sentiment-desc">Sentiment (high → low)</option>
+            <option value="sentiment-asc">Sentiment (low → high)</option>
+            <option value="time-desc">Newest first</option>
+            <option value="time-asc">Oldest first</option>
+            <option value="actor-asc">Actor (A → Z)</option>
+          </select>
+        </label>
+      </div>
+      <div class="table-wrap">
+        <table id="results-table">
+          <thead>
+            <tr><th>When</th><th>Actor</th><th>Verb</th><th>Activity</th><th>Classification</th><th>Score</th><th>Sentiment</th><th></th></tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <p class="hint" id="results-count"></p>
+    </section>
+
+    <!-- Detail -->
+    <section class="panel hidden" id="detail-panel" style="margin-top:1rem">
+      <h2>Statement detail</h2>
+      <pre id="detail-json"></pre>
+    </section>
+  </main>
+
+  <footer>
+    <p>Statements from your local send log or any xAPI 1.0.3 LRS.</p>
+  </footer>
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

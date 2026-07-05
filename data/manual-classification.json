@@ -1,0 +1,90 @@
+{
+  "meeting": {
+    "title": "Q2 Snack Bar Campaign Review",
+    "context": "Sarah (Marketing Director/Coach) and Marcus (Digital Marketing Specialist/Coachee) reviewing an organic snack bar campaign",
+    "durationMinutes": 5
+  },
+  "metric": {
+    "name": "Performance-Focused Coaching Rubric",
+    "type": "multi-dimensional",
+    "scaleLabels": ["Needs Improvement", "Developing", "Advanced"]
+  },
+  "classifiedBy": "claude-fable-5 (manual dry-run, no API routing)",
+  "overall": {
+    "classification": "Needs Improvement",
+    "score_scaled": 0.2,
+    "sentiment": -0.2,
+    "confidence": 0.9,
+    "summary": "Strong domain integration undermined by a directive, low-safety coaching process. The coach diagnoses and dictates the entire solution, asks only leading questions, interrupts repeatedly, and imposes a deadline despite a stated capacity constraint. Domain/tool relevance is the lone Advanced dimension."
+  },
+  "dimensions": [
+    {
+      "id": 1,
+      "name": "Powerful Questioning",
+      "level": "Needs Improvement",
+      "score_raw": 1,
+      "look_fors_absent": ["open What/How/Why questions", "pauses for processing", "questions that avoid embedding the answer"],
+      "evidence": [
+        "Don't you think that's a bit too generic for a niche organic snack bar?",
+        "don't you agree that a 30-year-old fitness enthusiast in California buys this bar for a completely different reason than a 30-year-old busy mom in Ohio...?",
+        "You know how to write an IF...THEN statement in Tableau... don't you?"
+      ]
+    },
+    {
+      "id": 2,
+      "name": "Coachee-Led Problem Solving",
+      "level": "Needs Improvement",
+      "score_raw": 1,
+      "coach_talk_time_pct": 71,
+      "evidence": [
+        "It's easy, you just use the data source tab, drag the CRM table in, and link it via customer email.",
+        "Um, yeah, that makes sense. I can look into how to do that join.",
+        "coachee's only lead ('I was thinking we could look into behavioral data next...') is immediately taken over by the coach"
+      ]
+    },
+    {
+      "id": 3,
+      "name": "Contextual Tool & Domain Relevance",
+      "level": "Advanced",
+      "score_raw": 3,
+      "note": "Content is genuinely Advanced even though delivered through a poor process; rubric #3 measures the integration, not who produces it.",
+      "evidence": [
+        "shouldn't we be using our CRM tags for 'primary benefit' and joining that with our Shopify checkout history? If you do a cross-database join in Tableau, you can isolate the high-frequency buyers from the occasional ones.",
+        "create a calculated field... write an IF...THEN statement... to group people into 'Fitness Enthusiasts' versus 'Convenience Buyers'"
+      ]
+    },
+    {
+      "id": 4,
+      "name": "Psychological Safety & Active Listening",
+      "level": "Needs Improvement",
+      "score_raw": 1,
+      "interruption_count": 3,
+      "evidence": [
+        "opens on the negative: 'our conversion rates are completely flat' with no acknowledgment of the clean dashboards",
+        "interrupts 'I was trying to figure out why—'",
+        "dismisses a stated roadblock: coachee says 'I haven't blended those specific data sources in Tableau before, but—' and is cut off with 'It's easy...'"
+      ]
+    },
+    {
+      "id": 5,
+      "name": "Action-Orientation & Collaborative Accountability",
+      "level": "Needs Improvement",
+      "score_raw": 1,
+      "note": "Has tasks + deadline + success measure, but imposed without verifying capacity or buy-in.",
+      "evidence": [
+        "can you just jump into Tableau right now... email me the updated dashboard link by 9:00 AM tomorrow",
+        "capacity signal ignored: 'I have a few other deadlines today, but... yeah, I can get that done.'"
+      ]
+    }
+  ],
+  "participants": [
+    { "name": "Sarah", "role": "Coach", "sentiment": 0.3, "note": "Upbeat and confident in tone but directive; does the coachee's thinking for him." },
+    { "name": "Marcus", "role": "Coachee", "sentiment": -0.3, "note": "Hesitant, deferential, and under time pressure; repeatedly cut off before completing his reasoning." }
+  ],
+  "recommendations": [
+    "Replace tag-questions with open diagnostics ('What do you think is driving the flat conversions?') and pause for the coachee to hypothesize.",
+    "Flip talk-time: have the coachee propose the segmentation approach and Tableau steps; coach as sounding board.",
+    "Validate the coachee's work and treat stated roadblocks as coaching moments before shifting to critique.",
+    "Let the coachee set the deadline against real workload and confirm capacity before committing them to downstream timelines."
+  ]
+}

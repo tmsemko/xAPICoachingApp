@@ -1,0 +1,32 @@
+Context: Sarah (Marketing Director/Coach) and Marcus (Digital Marketing Specialist/Coachee) are reviewing a recent campaign for a new organic snack bar line.
+Duration: ~5 minutes
+
+Sarah: Hey Marcus, come on in and sit down. I wanted to look over the Q2 snack bar campaign data with you. I saw the Tableau dashboards you put together, but honestly, our conversion rates are completely flat. Did you notice that?
+
+Marcus: Yeah, hey Sarah. I actually just pulled up the dashboard. I was a bit disappointed with the conversions too. I was trying to figure out why—
+
+Sarah: (Interrupting) Well, it's because our audience targeting is way too broad. You just segmented by age 25–40 and region again, right? Don't you think that's a bit too generic for a niche organic snack bar?
+
+Marcus: Well, yeah, I guess so. I thought starting with our core demographic from the last launch would give us a safe baseline, and then—
+
+Sarah: (Interrupting) But a baseline doesn't work when we need high-intent buyers. I mean, don't you agree that a 30-year-old fitness enthusiast in California buys this bar for a completely different reason than a 30-year-old busy mom in Ohio who just needs a quick snack for her kids?
+
+Marcus: Right, definitely. They have different motivations. I was thinking we could look into behavioral data next...
+
+Sarah: Exactly. So shouldn't we be using our CRM tags for "primary benefit" and joining that with our Shopify checkout history? If you do a cross-database join in Tableau, you can isolate the high-frequency buyers from the occasional ones. Don't you think that would give us a much clearer picture of who is actually buying?
+
+Marcus: Um, yeah, that makes sense. I can look into how to do that join. I haven't blended those specific data sources in Tableau before, but—
+
+Sarah: It's easy, you just use the data source tab, drag the CRM table in, and link it via customer email. Once you do that, you should probably create a calculated field, right? You know how to write an IF...THEN statement in Tableau to group people into "Fitness Enthusiasts" versus "Convenience Buyers," don't you?
+
+Marcus: Yeah, I know how to write calculated fields. I can try to set that up.
+
+Sarah: Great. And once you have those two segments, we obviously can't use the same generic ad creative for both. Don't you think we should send the high-protein, post-workout imagery to the fitness crowd, and the on-the-go family packs to the convenience buyers?
+
+Marcus: Yes, that would definitely match their intent better.
+
+Sarah: Perfect. That's exactly what will fix the conversion problem. So, can you just jump into Tableau right now, do that CRM-Shopify join, write the calculated field for those two segments, and then email me the updated dashboard link by 9:00 AM tomorrow so I can tell the creative team to swap the ads?
+
+Marcus: Uh, yeah. I have a few other deadlines today, but... yeah, I can get that done and emailed to you by tomorrow morning.
+
+Sarah: Awesome. Thanks, Marcus. Let's get those numbers up!

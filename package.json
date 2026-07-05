@@ -1,0 +1,19 @@
+{
+  "name": "meeting-metric-xapi",
+  "version": "1.0.0",
+  "description": "Classify meeting transcripts against a user-defined metric and route results to an LRS via xAPI",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js",
+    "classify": "node test/run-classify.mjs",
+    "classify:local": "LLM_MODE=local node test/run-classify.mjs test/fixtures/coaching-transcript.txt coaching",
+    "eval": "node eval/run-eval.mjs",
+    "eval:local": "LLM_MODE=local node eval/run-eval.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.90.0",
+    "express": "^4.21.0"
+  }
+}

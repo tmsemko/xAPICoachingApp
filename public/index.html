@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meeting Metric → xAPI</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Meeting Metric <span class="arrow">→</span> xAPI</h1>
+    <p class="tagline">Classify a meeting transcript against your metric, then route the result to your LRS. <a href="/dashboard.html">View results dashboard →</a></p>
+    <div id="mode-banner" class="mode-banner hidden"></div>
+  </header>
+
+  <nav id="steps">
+    <button class="step active" data-step="1"><span>1</span> Transcript</button>
+    <button class="step" data-step="2"><span>2</span> Metric</button>
+    <button class="step" data-step="3"><span>3</span> Classification</button>
+    <button class="step" data-step="4"><span>4</span> xAPI Mapping</button>
+    <button class="step" data-step="5"><span>5</span> Send to LRS</button>
+  </nav>
+
+  <main>
+    <!-- STEP 1: Transcript -->
+    <section id="step-1" class="panel">
+      <h2>Meeting transcript</h2>
+      <div class="grid-2">
+        <label>Meeting title
+          <input type="text" id="meeting-title" placeholder="Weekly team sync — Q3 planning" />
+        </label>
+        <label>Meeting date
+          <input type="date" id="meeting-date" />
+        </label>
+      </div>
+      <label>Meeting type
+        <select id="meeting-kind">
+          <option value="meeting">Meeting (general)</option>
+          <option value="discussion">Discussion</option>
+          <option value="online-discussion">Online discussion / video call</option>
+          <option value="face-to-face-discussion">Face-to-face discussion</option>
+          <option value="webinar">Webinar</option>
+          <option value="coaching">Coaching / tutoring session</option>
+          <option value="collaboration">Collaboration session</option>
+        </select>
+      </label>
+      <label>Transcript
+        <textarea id="transcript" rows="14" placeholder="Paste the transcript here, or load a file below.&#10;&#10;Speaker labels help — e.g.:&#10;Alice: I think we should revisit the launch date.&#10;Bob: Agreed, the QA backlog is a risk."></textarea>
+      </label>
+      <div class="row">
+        <input type="file" id="transcript-file" accept=".txt,.vtt,.srt,.md" />
+        <span class="hint">Accepts .txt, .vtt, .srt — VTT/SRT timing lines are stripped automatically.</span>
+      </div>
+      <div class="actions"><button class="primary" id="to-step-2">Next: define the metric →</button></div>
+    </section>
+
+    <!-- STEP 2: Metric -->
+    <section id="step-2" class="panel hidden">
+      <h2>What metric should this transcript be classified against?</h2>
+      <p class="hint">The metric is yours to define — the classifier will judge the discussion strictly against it.</p>
+
+      <label>Metric type
+        <select id="metric-mode">
+          <option value="single">Single metric (one scale)</option>
+          <option value="rubric">Multi-dimensional rubric</option>
+        </select>
+      </label>
+
+      <div id="rubric-picker" class="hidden">
+        <label>Built-in rubric
+          <select id="rubric-select"></select>
+        </label>
+        <div id="rubric-preview" class="rubric-preview"></div>
+      </div>
+
+      <div id="single-metric-config">
+      <div id="metric-presets" class="chips"></div>
+
+      <label>Metric name
+        <input type="text" id="metric-name" placeholder="e.g. Psychological Safety" />
+      </label>
+      <label>Definition / rubric <span class="hint">(what does high vs low look like?)</span>
+        <textarea id="metric-description" rows="5" placeholder="Describe what the classifier should look for. The more specific the rubric, the better the classification."></textarea>
+      </label>
+
+      <label>Scale type
+        <select id="scale-type">
+          <option value="categorical">Categorical labels (e.g. Low / Medium / High)</option>
+          <option value="numeric">Numeric score</option>
+        </select>
+      </label>
+
+      <div id="categorical-config">
+        <label>Labels, worst → best (comma-separated)
+          <input type="text" id="scale-labels" value="Low, Moderate, High" />
+        </label>
+      </div>
+      <div id="numeric-config" class="hidden grid-2">
+        <label>Minimum <input type="number" id="scale-min" value="1" /></label>
+        <label>Maximum <input type="number" id="scale-max" value="5" /></label>
+      </div>
+      </div><!-- /single-metric-config -->
+
+      <div class="actions">
+        <button id="back-to-1">← Back</button>
+        <button class="primary" id="run-classify">Classify transcript →</button>
+      </div>
+    </section>
+
+    <!-- STEP 3: Results -->
+    <section id="step-3" class="panel hidden">
+      <h2>Classification</h2>
+      <div id="classify-status" class="status hidden"></div>
+
+      <!-- Rubric (multi-dimensional) results -->
+      <div id="rubric-results" class="hidden">
+        <div class="result-header">
+          <div class="badge-big" id="rr-overall"></div>
+          <div class="scores">
+            <div class="score-item"><span class="label">Overall</span><span id="rr-score"></span></div>
+            <div class="score-item"><span class="label">Sentiment</span><span id="rr-sentiment"></span></div>
+            <div class="score-item"><span class="label">Confidence</span><span id="rr-confidence"></span></div>
+          </div>
+        </div>
+        <h3>Summary</h3><p id="rr-summary"></p>
+        <h3>Signals</h3><div id="rr-signals" class="chips readonly"></div>
+        <h3>Dimensions</h3><div id="rr-dimensions"></div>
+        <h3>Recommendations</h3><ul id="rr-recommendations"></ul>
+        <div class="actions">
+          <button id="rr-back-to-2">← Back</button>
+          <button class="primary" id="rr-to-step-4">Next: map to xAPI →</button>
+        </div>
+      </div>
+
+      <!-- Single-metric results -->
+      <div id="results" class="hidden">
+        <div class="result-header">
+          <div class="badge-big" id="r-classification"></div>
+          <div class="scores">
+            <div class="score-item"><span class="label">Score</span><span id="r-score"></span></div>
+            <div class="score-item"><span class="label">Sentiment</span><span id="r-sentiment"></span></div>
+            <div class="score-item"><span class="label">Confidence</span><span id="r-confidence"></span></div>
+          </div>
+        </div>
+        <h3>Summary</h3><p id="r-summary"></p>
+        <h3>Rationale</h3><p id="r-rationale"></p>
+        <h3>Topics</h3><div id="r-topics" class="chips readonly"></div>
+        <h3>Key moments</h3><div id="r-moments"></div>
+        <h3>Participants</h3><div id="r-participants"></div>
+        <h3>Recommendations</h3><ul id="r-recommendations"></ul>
+        <div class="actions">
+          <button id="back-to-2">← Back</button>
+          <button class="primary" id="to-step-4">Next: map to xAPI →</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- STEP 4: xAPI mapping -->
+    <section id="step-4" class="panel hidden">
+      <h2>xAPI mapping</h2>
+      <p class="hint">Suggestions below are based on your meeting type, scale, and the ADL profile registry. Adjust anything.</p>
+
+      <div class="grid-2">
+        <label>Verb
+          <select id="map-verb"></select>
+          <span class="hint" id="verb-hint"></span>
+        </label>
+        <label>Activity type
+          <select id="map-activity-type"></select>
+          <span class="hint" id="activity-hint"></span>
+        </label>
+      </div>
+
+      <label>Profiles <span class="hint">(added to context.contextActivities.category)</span></label>
+      <div id="map-profiles" class="check-list"></div>
+
+      <label>Registry extensions</label>
+      <div id="map-extensions" class="check-list"></div>
+
+      <label>Custom extension base IRI <span class="hint">(for AI-derived metadata: metric name/definition, sentiment, confidence, model)</span>
+        <input type="text" id="custom-base" value="http://example.org/xapi" />
+      </label>
+
+      <div class="grid-2">
+        <label>Actor name <span class="hint">(who this evaluation statement is about — e.g. the team or meeting owner)</span>
+          <input type="text" id="actor-name" placeholder="Q3 Planning Team" />
+        </label>
+        <label>Actor email <span class="hint">(optional — used as mbox)</span>
+          <input type="email" id="actor-email" placeholder="team@example.com" />
+        </label>
+      </div>
+
+      <label class="check-inline">
+        <input type="checkbox" id="include-participants" checked />
+        Also generate one <code>commented</code> statement per participant
+      </label>
+
+      <div class="actions">
+        <button id="back-to-3">← Back</button>
+        <button class="primary" id="build-statements">Preview statements →</button>
+      </div>
+    </section>
+
+    <!-- STEP 5: Send -->
+    <section id="step-5" class="panel hidden">
+      <h2>Send to LRS</h2>
+      <h3>Statement preview <span class="hint" id="stmt-count"></span></h3>
+      <pre id="statement-preview"></pre>
+
+      <h3>LRS connection</h3>
+      <div class="grid-2">
+        <label>Endpoint URL <span class="hint">(base xAPI endpoint, e.g. https://lrs.example.com/xapi)</span>
+          <input type="url" id="lrs-endpoint" placeholder="https://lrs.example.com/xapi" />
+        </label>
+        <label>&nbsp;</label>
+        <label>Username / key <input type="text" id="lrs-username" /></label>
+        <label>Password / secret <input type="password" id="lrs-password" /></label>
+      </div>
+
+      <div class="actions">
+        <button id="back-to-4">← Back</button>
+        <button class="primary" id="send-lrs">Send statements to LRS</button>
+      </div>
+      <div id="send-status" class="status hidden"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Vocabulary verified against the <a href="https://github.com/adlnet/xapi-authored-profiles" target="_blank" rel="noopener">ADL xAPI Authored Profiles</a> · Statements sent with X-Experience-API-Version 1.0.3</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
