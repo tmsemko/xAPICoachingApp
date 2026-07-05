@@ -1,9 +1,15 @@
-# Meeting Metric → xAPI
+# xAPI Coaching App (Meeting Metric → xAPI)
 
-Classify meeting transcripts against a **metric you define at run time**, extract
-sentiment and behavioral evidence, map the result to xAPI, and route the
-statements to any Learning Record Store (LRS). A results dashboard reads the
-statements back for behavior analysis.
+Classify coaching and meeting transcripts against a **metric you define at run
+time**, extract sentiment and behavioral evidence, map the result to xAPI, and
+route the statements to any Learning Record Store (LRS). A results dashboard
+reads the statements back for behavior analysis. Classification runs on
+**Claude or Gemini** — pick the provider with an environment variable.
+
+- **Repository:** https://github.com/tmsemko/xAPICoachingApp
+- **Hosting:** Netlify (static frontend + serverless `/api/*` function)
+- **Default LRS:** `https://sample-lrs-iguname.lrs.io/xapi/` (prefilled in the
+  send step and dashboard; supply your lrs.io key/secret as username/password)
 
 ## What it does
 
@@ -13,8 +19,8 @@ statements back for behavior analysis.
    at the start of each run (name + rubric + categorical labels or a numeric
    scale). Presets are included (Psychological Safety, Decision Quality,
    Engagement Balance, Coaching Presence, Sentiment).
-3. **Classify** — Claude (`claude-opus-4-8` by default, adaptive thinking,
-   schema-constrained JSON output) returns the classification, a 0–1 score,
+3. **Classify** — Claude or Gemini (schema-constrained JSON output) returns
+   the classification, a 0–1 score,
    sentiment, per-participant breakdown, key evidence quotes, topics/tags, and
    recommendations.
 4. **Map to xAPI** — the app suggests a verb, activity type, profiles, and
@@ -38,13 +44,64 @@ statements back for behavior analysis.
   statement plus one per dimension, so the dashboard can filter/sort by
   individual competency.
 
+## LLM providers — Claude or Gemini
+
+The live classifier supports two providers, selected by `LLM_PROVIDER` (or
+inferred from whichever API key is present; Claude wins ties):
+
+| Provider | API key env var | Default model | Override |
+|----------|-----------------|---------------|----------|
+| `claude` (default) | `ANTHROPIC_API_KEY` | `claude-sonnet-5` | `CLASSIFIER_MODEL` |
+| `gemini` | `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) | `gemini-2.5-flash` | `CLASSIFIER_MODEL` |
+
+Both backends use schema-constrained JSON output, so the rest of the pipeline
+(xAPI mapping, statements, dashboard) is provider-agnostic.
+
+```bash
+# Claude
+export ANTHROPIC_API_KEY=sk-ant-...
+LLM_PROVIDER=claude npm start
+
+# Gemini
+export GEMINI_API_KEY=AIza...
+LLM_PROVIDER=gemini npm start
+```
+
+## Deploying to Netlify
+
+The repo is Netlify-ready: [`netlify.toml`](netlify.toml) publishes `public/`
+as the static site and [`netlify/functions/api.mjs`](netlify/functions/api.mjs)
+serves every `/api/*` route as a serverless function (same `lib/` code as the
+local Express server).
+
+1. In Netlify: **Add new site → Import an existing project → GitHub →
+   `xAPICoachingApp`**. The build settings are read from `netlify.toml` — no
+   changes needed.
+2. Under **Site configuration → Environment variables**, add:
+   - `ANTHROPIC_API_KEY` and/or `GEMINI_API_KEY`
+   - optionally `LLM_PROVIDER` (`claude` | `gemini`) and `CLASSIFIER_MODEL`
+   - with no key set, the site runs in offline **local test mode** (heuristic
+     classifier) — the full pipeline still works for demos.
+3. Deploy. Every push to `main` redeploys automatically.
+
+Netlify notes:
+
+- **Function timeout** — synchronous functions are capped (configured to 26s in
+  `netlify.toml`). Prefer fast models on Netlify (`claude-haiku-4-5`,
+  `gemini-2.5-flash`) and moderate transcript sizes; for long rubric runs on
+  big transcripts, run locally.
+- **Send log** — on Netlify the send log is stored in **Netlify Blobs** instead
+  of `data/sent-statements.json`. If Blobs is unavailable the dashboard's
+  "Query LRS" source still works against any queryable LRS (including the
+  default lrs.io endpoint).
+
 ## Running locally for testing (no API key)
 
 The classifier has two backends, selected by `LLM_MODE`:
 
 | Mode | What runs | When |
 |------|-----------|------|
-| `api` (default when a key is present) | The Claude model (`CLASSIFIER_MODEL`, default `claude-sonnet-5`) | Production / real classification |
+| `api` (default when a key is present) | Claude or Gemini (see LLM providers above) | Production / real classification |
 | `local` (default when no key) | Offline deterministic heuristic in [`lib/localClassifier.js`](lib/localClassifier.js) | Pipeline testing, CI, demos |
 
 Local mode produces schema-valid output so the entire flow (classify → map →
@@ -114,8 +171,10 @@ registry equivalent uses a configurable custom base IRI
 ## Project layout
 
 ```
-server.js                Express API + static hosting + send log + mode switch
-lib/classify.js          Claude call; single + rubric JSON schemas; prompt builder
+server.js                Express API + static hosting + send log + mode switch (local dev)
+netlify.toml             Netlify build config (publishes public/, 26s function timeout)
+netlify/functions/api.mjs  Serverless /api/* routes for Netlify (send log in Netlify Blobs)
+lib/classify.js          Claude + Gemini backends; single + rubric JSON schemas; prompts
 lib/localClassifier.js   Offline deterministic classifier (LLM_MODE=local)
 lib/transcript.js        Deterministic speaker/talk-time/interruption parsing
 lib/rubrics.js           Built-in multi-dimensional rubrics (coaching)

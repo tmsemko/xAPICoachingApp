@@ -1,0 +1,11 @@
+# Netlify configuration — static frontend from public/, API via netlify/functions/api.mjs
+[build]
+  publish = "public"
+  command = "echo 'static site — nothing to build'"
+
+[functions]
+  node_bundler = "esbuild"
+
+[functions.api]
+  # Classification calls an LLM; give the function the maximum synchronous window.
+  timeout = 26

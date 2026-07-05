@@ -396,11 +396,11 @@ async function initModeAndRubrics() {
     const banner = $("mode-banner");
     if (state.config.llmMode === "local") {
       banner.className = "mode-banner local";
-      banner.textContent = "⚙ LOCAL TEST MODE — classification runs on the offline heuristic, no API call. Set ANTHROPIC_API_KEY and LLM_MODE=api for the real model.";
+      banner.textContent = "⚙ LOCAL TEST MODE — classification runs on the offline heuristic, no API call. Set ANTHROPIC_API_KEY (Claude) or GEMINI_API_KEY (Gemini) and LLM_MODE=api for the real model.";
       banner.classList.remove("hidden");
     } else {
       banner.className = "mode-banner api";
-      banner.textContent = `Live model: ${state.config.model}`;
+      banner.textContent = `Live model: ${state.config.model} (${state.config.provider || "claude"})`;
       banner.classList.remove("hidden");
     }
   } catch {}

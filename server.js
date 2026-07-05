@@ -10,15 +10,14 @@ import {
   CUSTOM_EXTENSION_SUFFIXES,
   suggest,
 } from "./lib/catalog.js";
-import { classifyTranscript } from "./lib/classify.js";
+import { classifyTranscript, hasLlmCredential, resolveProvider, resolveModel } from "./lib/classify.js";
 import { classifyLocally } from "./lib/localClassifier.js";
 import { RUBRICS } from "./lib/rubrics.js";
 import { buildStatements, sendToLrs } from "./lib/xapi.js";
 
 // LLM_MODE=local uses the offline heuristic classifier (no API key needed).
-// Defaults to local automatically when no Anthropic credential is present.
-const HAS_CREDENTIAL = !!(process.env.ANTHROPIC_API_KEY || process.env.ANTHROPIC_AUTH_TOKEN);
-const LLM_MODE = process.env.LLM_MODE || (HAS_CREDENTIAL ? "api" : "local");
+// Defaults to local automatically when no Claude/Gemini credential is present.
+const LLM_MODE = process.env.LLM_MODE || (hasLlmCredential() ? "api" : "local");
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -60,7 +59,8 @@ app.get("/api/suggest", (req, res) => {
 });
 
 app.get("/api/config", (_req, res) => {
-  res.json({ llmMode: LLM_MODE, model: process.env.CLASSIFIER_MODEL || "claude-sonnet-5" });
+  const provider = resolveProvider();
+  res.json({ llmMode: LLM_MODE, provider, model: resolveModel(provider) });
 });
 
 app.get("/api/rubrics", (_req, res) => {
@@ -90,7 +90,7 @@ app.post("/api/classify", async (req, res) => {
     if (/authentication|api.?key|authToken/i.test(msg)) {
       return res.status(500).json({
         error:
-          "No Anthropic API key is configured. Set the ANTHROPIC_API_KEY environment variable (see README) and restart the server.",
+          "No LLM API key is configured. Set ANTHROPIC_API_KEY (Claude) or GEMINI_API_KEY (Gemini) — see README — and restart the server.",
       });
     }
     const status = err.status && err.status >= 400 ? 502 : 500;

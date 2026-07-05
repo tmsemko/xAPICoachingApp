@@ -1,7 +1,7 @@
 {
-  "name": "meeting-metric-xapi",
+  "name": "xapi-coaching-app",
   "version": "1.0.0",
-  "description": "Classify meeting transcripts against a user-defined metric and route results to an LRS via xAPI",
+  "description": "Classify coaching/meeting transcripts against a user-defined metric with Claude or Gemini and route results to an LRS via xAPI",
   "type": "module",
   "main": "server.js",
   "scripts": {
@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.90.0",
+    "@netlify/blobs": "^10.7.9",
     "express": "^4.21.0"
   }
 }
