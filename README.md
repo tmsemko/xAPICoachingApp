@@ -33,6 +33,11 @@ reads the statements back for behavior analysis. Classification runs on
 6. **Dashboard** (`/dashboard.html`) — surfaces behaviors (verb distribution,
    per-actor behavior, topics) and a results table you can **filter by activity,
    actor, and verb** and **sort by result score, sentiment, time, or actor**.
+7. **Data dashboard** (`/analytics.html`) — tabbed statement explorer:
+   **Individual** (choose actor + activity → per-verb result breakdown),
+   **Verb** (choose verb, optionally filter by actor → per-actor performance
+   and every occurrence), and **Classification** (clickable level distribution
+   → all results at the chosen level).
 
 ## Metric modes
 
@@ -210,7 +215,7 @@ lib/transcript.js        Deterministic speaker/talk-time/interruption parsing
 lib/rubrics.js           Built-in multi-dimensional rubrics (coaching)
 lib/catalog.js           Verified xAPI vocabulary + rule-based suggestions
 lib/xapi.js              Statement builder (single + rubric) + LRS POST
-public/                  index.html (5-step wizard) + dashboard.html + JS/CSS
+public/                  index.html (5-step wizard) + dashboard.html + analytics.html + JS/CSS
 test/run-classify.mjs    CLI classifier runner (local or api)
 test/fixtures/           Transcript fixtures
 eval/run-eval.mjs        Model scorecard vs gold labels

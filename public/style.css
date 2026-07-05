@@ -171,6 +171,36 @@ button.link { background: none; border: none; color: var(--accent); cursor: poin
 .mode-banner.local { background: #fde7d6; color: #9a5a1a; border: 1px solid #e8c9a0; }
 .mode-banner.api { background: #ddeee3; color: var(--good); border: 1px solid #bcd9c6; }
 
+/* data dashboard tabs */
+.tabs { display: flex; gap: 0.4rem; border-bottom: 2px solid var(--line); margin-bottom: 1rem; }
+.tab-btn {
+  font: inherit;
+  background: none;
+  border: none;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  color: var(--muted);
+  font-weight: 600;
+}
+.tab-btn:hover { color: var(--ink); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+.verb-group { border: 1px solid var(--line); border-radius: 10px; padding: 0.8rem 1rem; margin: 0.75rem 0; }
+.verb-group-head { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.verb-group-head .verb-name { font-weight: 700; color: var(--accent); font-size: 1.05rem; }
+.verb-group-head .verb-avg { margin-left: auto; font-size: 0.85rem; color: var(--muted); }
+
+.bar-label.wide { flex: 0 0 16rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-row.dist { cursor: pointer; border-radius: 6px; padding: 0.15rem 0.3rem; }
+.bar-row.dist:hover { background: var(--accent-soft); }
+.bar-row.dist.selected { background: var(--accent-soft); outline: 1px solid var(--accent); }
+
+.sent { font-weight: 600; }
+.sent.good { color: var(--good); }
+.sent.bad { color: var(--bad); }
+
 .fw-cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));

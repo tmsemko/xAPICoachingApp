@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Dashboard — Meeting Metric → xAPI</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>Data Dashboard</h1>
+    <p class="tagline">Explore statements by individual, verb, or classification level.
+      <a href="/">← Classifier</a> · <a href="/dashboard.html">Results dashboard</a></p>
+  </header>
+
+  <main>
+    <!-- Data source -->
+    <section class="panel">
+      <h2>Data source</h2>
+      <div class="row">
+        <label class="check-inline"><input type="radio" name="source" value="local" checked /> Local send log</label>
+        <label class="check-inline"><input type="radio" name="source" value="lrs" /> Query LRS</label>
+        <button class="primary" id="load-data" style="margin-left:auto">Load statements</button>
+      </div>
+      <div id="lrs-config" class="grid-3 hidden">
+        <label>Endpoint URL <input type="url" id="q-endpoint" value="https://sample-lrs-iguname.lrs.io/xapi/" placeholder="https://lrs.example.com/xapi" /></label>
+        <label>Username / key <input type="text" id="q-username" /></label>
+        <label>Password / secret <input type="password" id="q-password" /></label>
+      </div>
+      <div id="load-status" class="status hidden"></div>
+    </section>
+
+    <!-- Tabs -->
+    <section class="panel" style="margin-top:1rem">
+      <div class="tabs" role="tablist">
+        <button class="tab-btn active" data-tab="individual" role="tab">Individual</button>
+        <button class="tab-btn" data-tab="verb" role="tab">Verb</button>
+        <button class="tab-btn" data-tab="classification" role="tab">Classification</button>
+      </div>
+
+      <!-- INDIVIDUAL TAB -->
+      <div class="tab-panel" id="tab-individual">
+        <p class="hint">Choose an actor and activity to see a breakdown of each verb and its results.</p>
+        <div class="filter-bar">
+          <label>Actor
+            <select id="ind-actor"></select>
+          </label>
+          <label>Activity
+            <select id="ind-activity"><option value="">All activities</option></select>
+          </label>
+        </div>
+        <div class="cards" id="ind-cards" style="margin-top:1rem"></div>
+        <div id="ind-verbs"></div>
+        <p class="hint hidden" id="ind-empty">No statements for this selection.</p>
+      </div>
+
+      <!-- VERB TAB -->
+      <div class="tab-panel hidden" id="tab-verb">
+        <p class="hint">Choose a verb — and optionally an actor — to see how actors perform across every occurrence of that verb.</p>
+        <div class="filter-bar">
+          <label>Verb
+            <select id="vb-verb"></select>
+          </label>
+          <label>Actor
+            <select id="vb-actor"><option value="">All actors</option></select>
+          </label>
+        </div>
+        <div class="cards" id="vb-cards" style="margin-top:1rem"></div>
+        <h3>By actor</h3>
+        <div class="table-wrap">
+          <table id="vb-actor-table">
+            <thead><tr><th>Actor</th><th>Statements</th><th>Avg score</th><th>Best</th><th>Worst</th><th>Avg sentiment</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <h3>Occurrences <span class="hint">(newest first)</span></h3>
+        <div id="vb-occurrences"></div>
+        <p class="hint hidden" id="vb-empty">No statements for this selection.</p>
+      </div>
+
+      <!-- CLASSIFICATION TAB -->
+      <div class="tab-panel hidden" id="tab-classification">
+        <p class="hint">Pick a classification level to see every result that landed on it. Click a bar or use the selector.</p>
+        <div class="filter-bar">
+          <label>Classification level
+            <select id="cl-level"></select>
+          </label>
+        </div>
+        <h3>Distribution</h3>
+        <div id="cl-distribution"></div>
+        <h3>Results at this level</h3>
+        <div class="table-wrap">
+          <table id="cl-table">
+            <thead><tr><th>When</th><th>Actor</th><th>Verb</th><th>Activity</th><th>Dimension</th><th>Score</th><th>Sentiment</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="hint hidden" id="cl-empty">No statements at this level.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p>Statements from your local send log or any xAPI 1.0.3 LRS.</p>
+  </footer>
+
+  <script src="analytics.js"></script>
+</body>
+</html>
