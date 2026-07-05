@@ -403,6 +403,12 @@ async function initModeAndRubrics() {
       banner.textContent = `Live model: ${state.config.model} (${state.config.provider || "claude"})`;
       banner.classList.remove("hidden");
     }
+    // Server-side LRS defaults from .env / Netlify env vars
+    if (state.config.lrsEndpoint) $("lrs-endpoint").value = state.config.lrsEndpoint;
+    if (state.config.lrsCredsConfigured) {
+      $("lrs-username").placeholder = "(leave blank — server credentials configured)";
+      $("lrs-password").placeholder = "(leave blank — server credentials configured)";
+    }
   } catch {}
   try {
     state.rubrics = await (await fetch("/api/rubrics")).json();

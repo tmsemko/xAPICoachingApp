@@ -18,6 +18,18 @@ document.querySelectorAll('input[name="source"]').forEach((r) =>
 
 $("load-data").addEventListener("click", loadData);
 
+// Prefill LRS connection from server-side defaults (.env / Netlify env vars)
+(async () => {
+  try {
+    const cfg = await (await fetch("/api/config")).json();
+    if (cfg.lrsEndpoint) $("q-endpoint").value = cfg.lrsEndpoint;
+    if (cfg.lrsCredsConfigured) {
+      $("q-username").placeholder = "(leave blank — server credentials configured)";
+      $("q-password").placeholder = "(leave blank — server credentials configured)";
+    }
+  } catch {}
+})();
+
 async function loadData() {
   const source = document.querySelector('input[name="source"]:checked').value;
   setStatus("info", "Loading…");

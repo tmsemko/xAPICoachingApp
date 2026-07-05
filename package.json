@@ -5,11 +5,11 @@
   "type": "module",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js",
-    "classify": "node test/run-classify.mjs",
+    "start": "node --env-file-if-exists=.env server.js",
+    "dev": "node --env-file-if-exists=.env server.js",
+    "classify": "node --env-file-if-exists=.env test/run-classify.mjs",
     "classify:local": "LLM_MODE=local node test/run-classify.mjs test/fixtures/coaching-transcript.txt coaching",
-    "eval": "node eval/run-eval.mjs",
+    "eval": "node --env-file-if-exists=.env eval/run-eval.mjs",
     "eval:local": "LLM_MODE=local node eval/run-eval.mjs"
   },
   "dependencies": {

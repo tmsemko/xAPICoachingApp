@@ -58,9 +58,25 @@ app.get("/api/suggest", (req, res) => {
   res.json(suggest({ meetingKind: req.query.meetingKind, scaleType: req.query.scaleType }));
 });
 
+// Server-side LRS defaults (.env locally, site env vars on Netlify). The UI
+// fields override them per request; the secret itself is never sent to the
+// browser — /api/config only reports that credentials exist.
+const lrsDefaults = () => ({
+  endpoint: process.env.LRS_ENDPOINT || "",
+  key: process.env.LRS_KEY || "",
+  secret: process.env.LRS_SECRET || "",
+});
+
 app.get("/api/config", (_req, res) => {
   const provider = resolveProvider();
-  res.json({ llmMode: LLM_MODE, provider, model: resolveModel(provider) });
+  const lrs = lrsDefaults();
+  res.json({
+    llmMode: LLM_MODE,
+    provider,
+    model: resolveModel(provider),
+    lrsEndpoint: lrs.endpoint,
+    lrsCredsConfigured: !!(lrs.key || lrs.secret),
+  });
 });
 
 app.get("/api/rubrics", (_req, res) => {
@@ -111,12 +127,16 @@ app.post("/api/statements/build", (req, res) => {
 });
 
 app.post("/api/lrs/send", async (req, res) => {
-  const { endpoint, username, password, statements } = req.body || {};
+  const defaults = lrsDefaults();
+  const { statements } = req.body || {};
+  const endpoint = req.body?.endpoint || defaults.endpoint;
+  const username = req.body?.username || defaults.key;
+  const password = req.body?.password || defaults.secret;
   if (!endpoint || !statements?.length) {
     return res.status(400).json({ error: "endpoint and statements are required." });
   }
   try {
-    const out = await sendToLrs({ endpoint, username: username || "", password: password || "", statements });
+    const out = await sendToLrs({ endpoint, username, password, statements });
     if (out.ok) {
       const ids = Array.isArray(out.body) ? out.body : [];
       appendLog(
@@ -140,7 +160,11 @@ app.get("/api/records", (_req, res) => {
 });
 
 app.get("/api/lrs/query", async (req, res) => {
-  const { endpoint, username = "", password = "", activity, verb, since, until, limit } = req.query;
+  const defaults = lrsDefaults();
+  const { activity, verb, since, until, limit } = req.query;
+  const endpoint = req.query.endpoint || defaults.endpoint;
+  const username = req.query.username || defaults.key;
+  const password = req.query.password || defaults.secret;
   if (!endpoint) return res.status(400).json({ error: "endpoint is required." });
   try {
     const url = new URL(endpoint.replace(/\/+$/, "") + "/statements");

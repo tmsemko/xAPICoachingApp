@@ -57,14 +57,29 @@ inferred from whichever API key is present; Claude wins ties):
 Both backends use schema-constrained JSON output, so the rest of the pipeline
 (xAPI mapping, statements, dashboard) is provider-agnostic.
 
-```bash
-# Claude
-export ANTHROPIC_API_KEY=sk-ant-...
-LLM_PROVIDER=claude npm start
+## Environment variables (.env)
 
-# Gemini
-export GEMINI_API_KEY=AIza...
-LLM_PROVIDER=gemini npm start
+Copy [`.env.example`](.env.example) to `.env` and fill in your keys — `.env` is
+gitignored and loaded automatically by `npm start` (Node's `--env-file-if-exists`,
+no dotenv dependency).
+
+| Variable | Purpose |
+|----------|---------|
+| `ANTHROPIC_API_KEY` | Claude classification |
+| `GEMINI_API_KEY` (or `GOOGLE_API_KEY`) | Gemini classification |
+| `LLM_PROVIDER` | `claude` \| `gemini` (optional; inferred from keys) |
+| `CLASSIFIER_MODEL` | Model override (optional) |
+| `LRS_ENDPOINT` | Default LRS endpoint (`https://sample-lrs-iguname.lrs.io/xapi/`) |
+| `LRS_KEY` / `LRS_SECRET` | LRS Basic-auth credentials (lrs.io key/secret) |
+
+The LRS values are **server-side defaults**: the send step and dashboard use
+them whenever the UI fields are left blank, and the secret never reaches the
+browser (`/api/config` only reports *that* credentials are configured, plus the
+endpoint to prefill). Filling in the UI fields overrides them per request.
+
+```bash
+cp .env.example .env   # then edit .env
+npm start
 ```
 
 ## Deploying to Netlify
@@ -79,9 +94,11 @@ local Express server).
    changes needed.
 2. Under **Site configuration → Environment variables**, add:
    - `ANTHROPIC_API_KEY` and/or `GEMINI_API_KEY`
+   - `LRS_ENDPOINT`, `LRS_KEY`, `LRS_SECRET` so users never have to type LRS
+     credentials into the browser
    - optionally `LLM_PROVIDER` (`claude` | `gemini`) and `CLASSIFIER_MODEL`
-   - with no key set, the site runs in offline **local test mode** (heuristic
-     classifier) — the full pipeline still works for demos.
+   - with no LLM key set, the site runs in offline **local test mode**
+     (heuristic classifier) — the full pipeline still works for demos.
 3. Deploy. Every push to `main` redeploys automatically.
 
 Netlify notes:

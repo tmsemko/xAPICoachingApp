@@ -21,6 +21,14 @@ import { buildStatements, sendToLrs } from "../../lib/xapi.js";
 
 const LLM_MODE = process.env.LLM_MODE || (hasLlmCredential() ? "api" : "local");
 
+// Server-side LRS defaults (Netlify site env vars). UI fields override them;
+// the secret never reaches the browser — config only reports that creds exist.
+const lrsDefaults = () => ({
+  endpoint: process.env.LRS_ENDPOINT || "",
+  key: process.env.LRS_KEY || "",
+  secret: process.env.LRS_SECRET || "",
+});
+
 const json = (body, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 
@@ -92,10 +100,15 @@ async function handleBuild(req) {
 }
 
 async function handleSend(req) {
-  const { endpoint, username, password, statements } = (await req.json().catch(() => ({}))) || {};
+  const body = (await req.json().catch(() => ({}))) || {};
+  const defaults = lrsDefaults();
+  const statements = body.statements;
+  const endpoint = body.endpoint || defaults.endpoint;
+  const username = body.username || defaults.key;
+  const password = body.password || defaults.secret;
   if (!endpoint || !statements?.length) return json({ error: "endpoint and statements are required." }, 400);
   try {
-    const out = await sendToLrs({ endpoint, username: username || "", password: password || "", statements });
+    const out = await sendToLrs({ endpoint, username, password, statements });
     if (out.ok) {
       const ids = Array.isArray(out.body) ? out.body : [];
       await appendLog(
@@ -120,7 +133,10 @@ async function handleRecords() {
 
 async function handleLrsQuery(url) {
   const q = url.searchParams;
-  const endpoint = q.get("endpoint");
+  const defaults = lrsDefaults();
+  const endpoint = q.get("endpoint") || defaults.endpoint;
+  const username = q.get("username") || defaults.key;
+  const password = q.get("password") || defaults.secret;
   if (!endpoint) return json({ error: "endpoint is required." }, 400);
   try {
     const target = new URL(endpoint.replace(/\/+$/, "") + "/statements");
@@ -129,7 +145,7 @@ async function handleLrsQuery(url) {
     }
     target.searchParams.set("limit", String(Math.min(Number(q.get("limit")) || 200, 500)));
 
-    const auth = Buffer.from(`${q.get("username") || ""}:${q.get("password") || ""}`).toString("base64");
+    const auth = Buffer.from(`${username}:${password}`).toString("base64");
     const r = await fetch(target, {
       headers: { "X-Experience-API-Version": "1.0.3", Authorization: `Basic ${auth}` },
     });
@@ -169,7 +185,14 @@ export default async (req) => {
   }
   if (method === "GET" && route === "config") {
     const provider = resolveProvider();
-    return json({ llmMode: LLM_MODE, provider, model: resolveModel(provider) });
+    const lrs = lrsDefaults();
+    return json({
+      llmMode: LLM_MODE,
+      provider,
+      model: resolveModel(provider),
+      lrsEndpoint: lrs.endpoint,
+      lrsCredsConfigured: !!(lrs.key || lrs.secret),
+    });
   }
   if (method === "GET" && route === "rubrics") return json(RUBRICS);
   if (method === "POST" && route === "classify") return handleClassify(req);
