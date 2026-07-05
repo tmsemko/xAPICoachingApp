@@ -136,6 +136,7 @@ function populateSelectors() {
   populateIndActivities();
   fillSelect($("vb-verb"), uniqueSorted(ROWS.map((r) => r.verbDisplay)));
   fillSelect($("vb-actor"), uniqueSorted(ROWS.map((r) => r.actorName)), { keepFirst: true });
+  fillSelect($("cl-metric"), uniqueSorted(ROWS.filter((r) => r.metricName).map((r) => r.metricName)), { keepFirst: true });
   fillSelect($("cl-level"), uniqueSorted(ROWS.filter((r) => r.classification != null).map((r) => r.classification)));
 }
 
@@ -274,10 +275,15 @@ function renderVerb() {
 // CLASSIFICATION — level → distribution + results at that level
 // ============================================================
 $("cl-level").addEventListener("change", renderClassification);
+$("cl-metric").addEventListener("change", renderClassification);
 
 function renderClassification() {
+  const metric = $("cl-metric").value;
+  const classified = ROWS.filter((r) => r.classification != null && (!metric || r.metricName === metric));
+
+  // level options follow the metric filter (fillSelect keeps the selection when it still exists)
+  fillSelect($("cl-level"), uniqueSorted(classified.map((r) => r.classification)));
   const level = $("cl-level").value;
-  const classified = ROWS.filter((r) => r.classification != null);
 
   // distribution (clickable)
   const counts = new Map();
