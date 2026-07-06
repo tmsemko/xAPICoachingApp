@@ -303,9 +303,84 @@ function renderMapping(suggestion) {
         <span><strong>${x.display}</strong> <em>(${x.location})</em>${suggestion.extensions.includes(x.id) ? " (suggested)" : ""} — ${x.hint}<br/><span class="iri">${x.id}</span></span></label>`
     )
     .join("");
+
+  // Re-suggest per-statement activity when the run-level activity type changes.
+  actSel.addEventListener("change", renderPerStatementMapping);
+  renderPerStatementMapping();
 }
 
 $("back-to-3").addEventListener("click", () => showStep(3));
+
+// ---------- per-statement verb/activity mapping (Workflow B) ----------
+function verbOptions(selectedId) {
+  return state.catalog.verbs
+    .map((v) => `<option value="${v.id}" ${v.id === selectedId ? "selected" : ""}>${esc(v.display)}</option>`)
+    .join("");
+}
+function activityOptions(selectedId) {
+  return state.catalog.activityTypes
+    .map((t) => `<option value="${t.id}" ${t.id === selectedId ? "selected" : ""}>${esc(t.display)}</option>`)
+    .join("");
+}
+const validVerb = (id) => state.catalog.verbs.some((v) => v.id === id);
+const validActivity = (id) => state.catalog.activityTypes.some((t) => t.id === id);
+
+function renderPerStatementMapping() {
+  const wrap = $("per-statement-mapping");
+  const rowsEl = $("statement-map-rows");
+  const c = state.classification;
+  if (!c || !c.result) return wrap.classList.add("hidden");
+
+  const runActivity = $("map-activity-type").value;
+  const rows = [];
+
+  if (c.mode === "rubric" && Array.isArray(c.result.dimensions)) {
+    c.result.dimensions.forEach((d, i) => {
+      rows.push(`<div class="stmt-row" data-kind="dimension" data-index="${i}">
+        <span class="stmt-label">${esc(d.name)}</span>
+        <select class="stmt-verb">${verbOptions(validVerb(d.suggested_verb) ? d.suggested_verb : $("map-verb").value)}</select>
+        <select class="stmt-activity">${activityOptions(validActivity(d.suggested_activity_type) ? d.suggested_activity_type : runActivity)}</select>
+      </div>`);
+    });
+  }
+
+  if ($("include-participants").checked && Array.isArray(c.result.participants)) {
+    // Participant statements are only emitted in single-metric mode.
+    if (c.mode !== "rubric") {
+      c.result.participants.forEach((p, i) => {
+        rows.push(`<div class="stmt-row" data-kind="participant" data-index="${i}">
+          <span class="stmt-label">${esc(p.name)} <span class="hint">participant</span></span>
+          <select class="stmt-verb">${verbOptions(validVerb(p.suggested_verb) ? p.suggested_verb : "http://adlnet.gov/expapi/verbs/commented")}</select>
+          <span class="hint stmt-activity-note">(meeting object)</span>
+        </div>`);
+      });
+    }
+  }
+
+  if (!rows.length) return wrap.classList.add("hidden");
+  rowsEl.innerHTML =
+    `<div class="stmt-row stmt-head"><span class="stmt-label">Statement</span><span>Verb</span><span>Activity type</span></div>` +
+    rows.join("");
+  wrap.classList.remove("hidden");
+}
+
+// Write the per-statement selections back into the classification result so the
+// server's builder (which reads suggested_verb/suggested_activity_type) uses them.
+function applyPerStatementOverrides() {
+  const c = state.classification;
+  if (!c || !c.result) return;
+  document.querySelectorAll("#statement-map-rows .stmt-row[data-kind]").forEach((row) => {
+    const i = Number(row.dataset.index);
+    const list = row.dataset.kind === "dimension" ? c.result.dimensions : c.result.participants;
+    if (!list || !list[i]) return;
+    const verbSel = row.querySelector(".stmt-verb");
+    const actSel = row.querySelector(".stmt-activity");
+    if (verbSel) list[i].suggested_verb = verbSel.value;
+    if (actSel) list[i].suggested_activity_type = actSel.value;
+  });
+}
+
+$("include-participants").addEventListener("change", renderPerStatementMapping);
 
 // ---------- step 5: build + send ----------
 $("build-statements").addEventListener("click", async () => {
@@ -314,6 +389,7 @@ $("build-statements").addEventListener("click", async () => {
     alert("Provide an actor name (who the evaluation statement is about).");
     return;
   }
+  applyPerStatementOverrides();
   const mapping = {
     verb: $("map-verb").value,
     activityType: $("map-activity-type").value,

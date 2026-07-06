@@ -161,14 +161,21 @@
       <p class="hint">Suggestions below are based on your meeting type, scale, and the ADL profile registry. Adjust anything.</p>
 
       <div class="grid-2">
-        <label>Verb
+        <label>Verb <span class="hint">(the overall evaluation statement)</span>
           <select id="map-verb"></select>
           <span class="hint" id="verb-hint"></span>
         </label>
-        <label>Activity type
+        <label>Activity type <span class="hint">(the meeting/session object)</span>
           <select id="map-activity-type"></select>
           <span class="hint" id="activity-hint"></span>
         </label>
+      </div>
+
+      <div id="per-statement-mapping" class="hidden">
+        <label>Per-statement verbs
+          <span class="hint">Each dimension/participant statement is suggested its own verb (and activity type) — override any below.</span>
+        </label>
+        <div id="statement-map-rows" class="stmt-map"></div>
       </div>
 
       <label>Profiles <span class="hint">(added to context.contextActivities.category)</span></label>
@@ -192,7 +199,7 @@
 
       <label class="check-inline">
         <input type="checkbox" id="include-participants" checked />
-        Also generate one <code>commented</code> statement per participant
+        Also generate one statement per participant <span class="hint">(with a per-person verb)</span>
       </label>
 
       <div class="actions">

@@ -25,7 +25,15 @@ reads the statements back for behavior analysis. Classification runs on
    recommendations.
 4. **Map to xAPI** — the app suggests a verb, activity type, profiles, and
    extensions based on your meeting type and scale, and explains each choice.
-   You can override anything. All IRIs are verified against the
+   **Per-statement verbs:** rather than stamping one verb on every statement,
+   the classifier suggests a distinct verb and activity type for each rubric
+   dimension and each participant (a questioning dimension → `asked`, a
+   scaling dimension → `rated`, a listening dimension → `talked-with`), chosen
+   inline from the controlled vocabulary during the same classification call
+   (no extra API round-trip). A per-statement table in the mapping step lets
+   you override any of them; a deterministic rule-based mapper is the fallback
+   in offline mode or when the model omits a suggestion. You can override
+   anything. All IRIs are verified against the
    [ADL xAPI Authored Profiles](https://github.com/adlnet/xapi-authored-profiles)
    (ADL Vocabulary, AcrossX, TinCan Registry).
 5. **Send to LRS** — statements are POSTed to your LRS with

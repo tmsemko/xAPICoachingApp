@@ -171,6 +171,15 @@ button.link { background: none; border: none; color: var(--accent); cursor: poin
 .mode-banner.local { background: #fde7d6; color: #9a5a1a; border: 1px solid #e8c9a0; }
 .mode-banner.api { background: #ddeee3; color: var(--good); border: 1px solid #bcd9c6; }
 
+/* per-statement mapping editor */
+#per-statement-mapping { margin: 0.5rem 0 1rem; }
+.stmt-map { margin-top: 0.4rem; }
+.stmt-row { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 0.6rem; align-items: center; padding: 0.3rem 0; border-bottom: 1px dashed var(--line); }
+.stmt-row.stmt-head { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); border-bottom: 1px solid var(--line); }
+.stmt-row .stmt-label { font-size: 0.9rem; font-weight: 600; }
+.stmt-row select { min-width: 0; width: 100%; }
+.stmt-activity-note { align-self: center; }
+
 /* data dashboard tabs */
 .tabs { display: flex; gap: 0.4rem; border-bottom: 2px solid var(--line); margin-bottom: 1rem; }
 .tab-btn {
